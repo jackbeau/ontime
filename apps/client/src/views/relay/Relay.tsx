@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import QRCode from 'react-qr-code';
 import { useViewportSize } from '@mantine/hooks';
 import { CustomFields, OntimeEvent, ProjectData, Runtime, Settings, ViewSettings } from 'ontime-types';
 import { millisToString, removeLeadingZero } from 'ontime-utils';
@@ -19,12 +18,12 @@ import { useTranslation } from '../../translation/TranslationProvider';
 import ScheduleExport from '../common/schedule/ScheduleExport';
 import { getTotalTime } from '../timer/timer.utils';
 
-import { getBackstageOptions, useBackstageOptions } from './backstage.options';
-import { getCardData, getIsPendingStart, getShowProgressBar, isOvertime } from './backstage.utils';
+import { getRelayOptions, useRelayOptions } from './relay.options';
+import { getCardData, getIsPendingStart, getShowProgressBar, isOvertime } from './relay.utils';
 
-import './Backstage.scss';
+import './Relay.scss';
 
-interface BackstageProps {
+interface RelayProps {
   backstageEvents: OntimeEvent[];
   customFields: CustomFields;
   eventNow: OntimeEvent | null;
@@ -40,7 +39,7 @@ interface BackstageProps {
   viewSettings: ViewSettings;
 }
 
-export default function Backstage(props: BackstageProps) {
+export default function Relay(props: RelayProps) {
   const {
     backstageEvents,
     customFields,
@@ -58,11 +57,11 @@ export default function Backstage(props: BackstageProps) {
   } = props;
 
   const { getLocalizedString } = useTranslation();
-  const { secondarySource, hidePrivate, hideNext, useMultipartProgressBar } = useBackstageOptions();
+  const { secondarySource, hidePrivate, hideNext, useMultipartProgressBar, iframeUrl } = useRelayOptions();
   const [blinkClass, setBlinkClass] = useState(false);
   const { height: screenHeight } = useViewportSize();
 
-  useWindowTitle('Backstage');
+  useWindowTitle('Relay');
 
   // blink on change
   useEffect(() => {
@@ -99,7 +98,6 @@ export default function Backstage(props: BackstageProps) {
   displayTimer = removeLeadingZero(displayTimer);
 
   // gather presentation styles
-  const qrSize = Math.max(window.innerWidth / 15, 72);
   const showProgress = getShowProgressBar(time.playback);
   const showSchedule = hasEvents && screenHeight > 420; // in vertical screens we may not have space
 
@@ -108,11 +106,11 @@ export default function Backstage(props: BackstageProps) {
 
   // gather option data
   const defaultFormat = getDefaultFormat(settings?.timeFormat);
-  const backstageOptions = getBackstageOptions(defaultFormat, customFields);
+  const relayOptions = getRelayOptions(defaultFormat, customFields);
 
   return (
-    <div className={`backstage ${isMirrored ? 'mirror' : ''}`} data-testid='backstage-view'>
-      <ViewParamsEditor viewOptions={backstageOptions} />
+    <div className={`relay ${isMirrored ? 'mirror' : ''}`} data-testid='relay-view'>
+      <ViewParamsEditor viewOptions={relayOptions} />
       <div className='project-header'>
         {general?.projectLogo ? <ViewLogo name={general.projectLogo} className='logo' /> : <div className='logo' />}
         <div className='title'>{general.title}</div>
@@ -122,6 +120,19 @@ export default function Backstage(props: BackstageProps) {
         </div>
       </div>
 
+      <div className='iframe-placeholder'>
+        {iframeUrl && (
+          <iframe
+            src={iframeUrl}
+            width='100%'
+            height='100%'
+            allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+            allowFullScreen
+            title='Embedded content'
+            loading='lazy'
+          />
+        )}
+      </div>
       {showProgress &&
         (useMultipartProgressBar ? (
           <MultiPartProgressBar
@@ -143,6 +154,7 @@ export default function Backstage(props: BackstageProps) {
           />
         ))}
       {!hasEvents && <Empty text={getLocalizedString('common.no_data')} className='empty-container' />}
+
       <div className='card-container'>
         {showNow && (
           <div className={cx(['event', 'now', blinkClass && 'blink'])}>
@@ -175,7 +187,6 @@ export default function Backstage(props: BackstageProps) {
             )}
           </div>
         )}
-
         {!showNow && hasEvents && (
           <div className='event'>
             <div className='title-card__placeholder'>{getLocalizedString('countdown.waiting')}</div>
@@ -202,12 +213,11 @@ export default function Backstage(props: BackstageProps) {
         )}
       </div>
 
-      {showSchedule && <ScheduleExport selectedId={selectedId} isBackstage />}
-
-      <div className={cx(['info', !showSchedule && 'info--stretch'])}>
-        {general.backstageUrl && <QRCode value={general.backstageUrl} size={qrSize} level='L' className='qr' />}
-        {general.backstageInfo && <div className='info__message'>{general.backstageInfo}</div>}
-      </div>
+      {showSchedule && (
+        <div className='sidebar-container'>
+          <ScheduleExport selectedId={selectedId} isBackstage hidePrivate={hidePrivate} />
+        </div>
+      )}
     </div>
   );
 }

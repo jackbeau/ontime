@@ -1,6 +1,6 @@
 @use '../../theme/viewerDefs' as *;
 
-.backstage {
+.relay {
   margin: 0;
   box-sizing: border-box;
   /* reset */
@@ -17,13 +17,14 @@
   font-size: $base-font-size;
 
   display: grid;
-  grid-template-columns: 1fr 40vw;
-  grid-template-rows: auto 12px 1fr auto;
+  grid-template-columns: 1fr 20vw;
+  grid-template-rows: auto 1fr auto auto auto;
   grid-template-areas:
-    'header    header'
-    'progress  schedule-nav'
-    'card      schedule'
-    'info      schedule';
+    'header    sidebar-container'
+    'iframe-placeholder sidebar-container'
+    'progress  sidebar-container'
+    'card      sidebar-container'
+    'info      sidebar-container';
 
   .empty-container {
     position: absolute;
@@ -71,6 +72,12 @@
   }
 
   /* =================== MAIN - NOW ===================*/
+
+  .iframe-placeholder {
+    grid-area: iframe-placeholder;
+    width: 100%;
+    height: 100%;
+  }
 
   .progress-container {
     grid-area: progress;
@@ -133,7 +140,19 @@
 
   /* =================== MAIN - SCHEDULE ===================*/
 
-  $schedule-left-spacing: clamp(16px, 4vw, 64px);
+  $schedule-left-spacing: clamp(16px, 1vw, 64px);
+
+  .sidebar-container {
+    padding-top: 8px;
+    grid-area: sidebar-container;
+    display: grid;
+    row-gap: 16px;
+    grid-template-columns: auto;
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      'schedule-nav'
+      'schedule';
+  }
 
   .schedule-container {
     grid-area: schedule;
@@ -143,9 +162,11 @@
   }
 
   .schedule-nav-container {
+    height: 100%;
     grid-area: schedule-nav;
     padding-left: $schedule-left-spacing;
   }
+
 
   /* =================== MAIN - INFO ===================*/
 
@@ -175,7 +196,7 @@
 
 /* =================== MOBILE ===================*/
 @media screen and (max-width: 768px) {
-  .backstage {
+  .relay {
     display: flex;
     flex-direction: column;
     overflow-y: auto;

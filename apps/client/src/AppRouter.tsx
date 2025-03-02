@@ -28,6 +28,7 @@ const ClockView = React.lazy(() => import('./features/viewers/clock/Clock'));
 const Countdown = React.lazy(() => import('./features/viewers/countdown/Countdown'));
 
 const Backstage = React.lazy(() => import('./views/backstage/Backstage'));
+const Relay = React.lazy(() => import('./views/relay/Relay'));
 const Timeline = React.lazy(() => import('./views/timeline/TimelinePage'));
 const Public = React.lazy(() => import('./views/public/Public'));
 const Lower = React.lazy(() => import('./features/viewers/lower-thirds/LowerThird'));
@@ -39,6 +40,7 @@ const SMinimalTimer = withPreset(withData(MinimalTimerView));
 const SClock = withPreset(withData(ClockView));
 const SCountdown = withPreset(withData(Countdown));
 const SBackstage = withPreset(withData(Backstage));
+const SRelay = withPreset(withData(Relay));
 const SProjectInfo = withPreset(withData(ProjectInfo));
 const SPublic = withPreset(withData(Public));
 const SLowerThird = withPreset(withData(Lower));
@@ -125,6 +127,14 @@ export default function AppRouter() {
           element={
             <ViewLoader>
               <SBackstage />
+            </ViewLoader>
+          }
+        />
+        <Route
+          path='/relay'
+          element={
+            <ViewLoader>
+              <SRelay />
             </ViewLoader>
           }
         />

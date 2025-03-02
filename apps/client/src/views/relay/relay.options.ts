@@ -11,7 +11,7 @@ import { ViewOption } from '../../common/components/view-params-editor/types';
 import { isStringBoolean } from '../../features/viewers/common/viewUtils';
 import { scheduleOptions } from '../common/schedule/schedule.options';
 
-export const getBackstageOptions = (timeFormat: string, customFields: CustomFields): ViewOption[] => {
+export const getRelayOptions = (timeFormat: string, customFields: CustomFields): ViewOption[] => {
   const secondaryOptions = makeOptionsFromCustomFields(customFields, { note: 'Note' });
 
   return [
@@ -26,6 +26,13 @@ export const getBackstageOptions = (timeFormat: string, customFields: CustomFiel
           description: 'Select the data source for auxiliary text shown in now and next cards',
           type: 'option',
           values: secondaryOptions,
+          defaultValue: '',
+        },
+        {
+          id: 'iframe-url',
+          title: 'Iframe URL',
+          description: 'URL to load in the iframe. Leave empty for no iframe content.',
+          type: 'string',
           defaultValue: '',
         },
         {
@@ -55,31 +62,33 @@ export const getBackstageOptions = (timeFormat: string, customFields: CustomFiel
   ];
 };
 
-type BackstageOptions = {
+type RelayOptions = {
   secondarySource: keyof OntimeEvent | null;
   hidePrivate: boolean;
   hideNext: boolean;
   useMultipartProgressBar: boolean;
+  iframeUrl: string | null;
 };
 
 /**
  * Utility extract the view options from URL Params
  * the names and fallback are manually matched with timerOptions
  */
-function getOptionsFromParams(searchParams: URLSearchParams): BackstageOptions {
+function getOptionsFromParams(searchParams: URLSearchParams): RelayOptions {
   // we manually make an object that matches the key above
   return {
     secondarySource: searchParams.get('secondary-src') as keyof OntimeEvent | null,
     hidePrivate: isStringBoolean(searchParams.get('hide-private')),
     hideNext: isStringBoolean(searchParams.get('hide-next')),
     useMultipartProgressBar: isStringBoolean(searchParams.get('useMultipartProgressBar')),
+    iframeUrl: searchParams.get('iframe-url'),
   };
 }
 
 /**
- * Hook exposes the backstage view options
+ * Hook exposes the relay view options
  */
-export function useBackstageOptions(): BackstageOptions {
+export function useRelayOptions(): RelayOptions {
   const [searchParams] = useSearchParams();
   const options = useMemo(() => getOptionsFromParams(searchParams), [searchParams]);
   return options;

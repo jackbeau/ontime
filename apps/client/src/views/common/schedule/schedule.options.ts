@@ -30,6 +30,13 @@ export const scheduleOptions: ViewOption = {
       type: 'boolean',
       defaultValue: false,
     },
+    {
+      id: 'disablePages',
+      title: 'Disable pagination',
+      description: 'Events will show in a scrollable container instead',
+      type: 'boolean',
+      defaultValue: false,
+    },
   ],
 };
 
@@ -37,6 +44,7 @@ type ScheduleOptions = {
   cycleInterval: number;
   stopCycle: boolean;
   showProjected: boolean;
+  disablePages: boolean;
 };
 
 function getScheduleOptionsFromParams(searchParams: URLSearchParams): ScheduleOptions {
@@ -44,6 +52,8 @@ function getScheduleOptionsFromParams(searchParams: URLSearchParams): ScheduleOp
     cycleInterval: Number(searchParams.get('cycleInterval')) || 10,
     stopCycle: isStringBoolean(searchParams.get('stopCycle')),
     showProjected: isStringBoolean(searchParams.get('showProjected')),
+    disablePages: isStringBoolean(searchParams.get('disablePages')),
+
   };
 }
 

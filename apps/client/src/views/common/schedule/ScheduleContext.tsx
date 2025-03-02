@@ -28,20 +28,19 @@ const ScheduleContext = createContext<ScheduleContextState | undefined>(undefine
 interface ScheduleProviderProps {
   selectedEventId: string | null;
   isBackstage?: boolean;
+  hidePrivate?: boolean;
 }
 
 export const ScheduleProvider = ({
   children,
   selectedEventId,
   isBackstage = false,
+  hidePrivate = false,
 }: PropsWithChildren<ScheduleProviderProps>) => {
-  const { cycleInterval, stopCycle } = useScheduleOptions();
+  const { cycleInterval, stopCycle, disablePages } = useScheduleOptions();
   const { data: events } = usePartialRundown((event: OntimeRundownEntry) => {
-    if (isBackstage) {
-      return isOntimeEvent(event);
-    }
-    return isOntimeEvent(event) && event.isPublic && !event.skip;
-  });
+    return isOntimeEvent(event);
+  }) as { data: OntimeEvent[] };
 
   const [firstIndex, setFirstIndex] = useState(-1);
   const [numPages, setNumPages] = useState(0);
@@ -52,13 +51,42 @@ export const ScheduleProvider = ({
 
   const containerRef = useRef<HTMLUListElement>(null);
 
-  // After the view is rendered, we paginate by hiding elements that dont fit
   useLayoutEffect(() => {
     if (!containerRef.current) return;
+
+    // If pagination is disabled, create a scrollable list
+    if (disablePages) {
+      const children = Array.from(containerRef.current.children) as HTMLElement[];
+      if (children.length === 0) return;
+
+      for (let i = 0; i < children.length; i++) {
+        const element = children[i];
+        element.style.position = 'relative';
+        element.style.top = '0';
+      }
+
+      // Set container to be scrollable
+      if (containerRef.current) {
+        containerRef.current.style.height = 'auto';
+        containerRef.current.style.overflow = 'auto';
+        containerRef.current.style.position = 'relative';
+      }
+
+      // Set single page for context
+      setNumPages(1);
+      setVisiblePage(1);
+      return;
+    }
 
     const children = Array.from(containerRef.current.children) as HTMLElement[];
     if (children.length === 0) {
       return;
+    }
+
+    if (containerRef.current) {
+      containerRef.current.style.height = '';
+      containerRef.current.style.overflow = 'hidden';
+      containerRef.current.style.position = 'relative';
     }
 
     const containerHeight = containerRef.current.clientHeight;
@@ -70,6 +98,9 @@ export const ScheduleProvider = ({
 
     for (let i = 0; i < children.length; i++) {
       const currentElementHeight = children[i].clientHeight;
+
+      // Ensure elements have absolute positioning for pagination mode
+      children[i].style.position = 'absolute';
 
       // can we fit this element in the current page?
       const isNextPage = currentPageHeight + currentElementHeight > containerHeight;
@@ -109,19 +140,21 @@ export const ScheduleProvider = ({
     function hideElement(element: HTMLElement) {
       element.style.top = `${-1000}px`;
     }
-    // we need to add the events to make sure the effect runs on first render
-  }, [firstIndex, events]);
+  }, [firstIndex, events, disablePages]);
 
-  // schedule cycling through events
+  // schedule cycling through events (only for pagination mode)
   useEffect(() => {
-    if (stopCycle) {
+    // Clear any existing interval
+    if (paginator.current) {
+      clearInterval(paginator.current);
+      paginator.current = undefined;
+    }
+
+    // Don't set up cycling if pagination is disabled or cycling is stopped
+    if (disablePages || stopCycle) {
       setVisiblePage(1);
       setFirstIndex(0);
       return;
-    }
-
-    if (paginator.current) {
-      clearInterval(paginator.current);
     }
 
     const interval = setInterval(() => {
@@ -134,13 +167,17 @@ export const ScheduleProvider = ({
     }, cycleInterval * 1000);
     paginator.current = interval;
 
-    return () => clearInterval(paginator.current);
-  }, [cycleInterval, numPages, stopCycle, visiblePage]);
+    return () => {
+      if (paginator.current) {
+        clearInterval(paginator.current);
+      }
+    };
+  }, [cycleInterval, numPages, stopCycle, visiblePage, disablePages]);
 
   let selectedEventIndex = events.findIndex((event) => event.id === selectedEventId);
 
   // we want to show the event after the current
-  const viewEvents = events.toSpliced(0, selectedEventIndex + 1);
+  const viewEvents = events.toSpliced(0, selectedEventIndex + 1).filter((e) => !hidePrivate || e.isPublic);
   selectedEventIndex = 0;
 
   return (
