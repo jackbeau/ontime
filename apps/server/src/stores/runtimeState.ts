@@ -216,13 +216,13 @@ export function loadNow(timedEvents: OntimeEvent[], eventIndex: MaybeNumber = ru
     // assume there is no public event
     runtimeState.publicEventNow = null;
 
-    // if there is nothing before, return
-    if (!eventIndex) {
+    // if there is no more events, return
+    if (eventIndex >= timedEvents.length - 1) {
       return;
     }
 
-    // iterate backwards to find it
-    for (let i = eventIndex; i >= 0; i--) {
+    // iterate forward to find the next public event
+    for (let i = eventIndex + 1; i < timedEvents.length; i++) {
       const event = timedEvents[i];
       // we dont deal with events that are not playable
       if (!isPlayableEvent(event)) {
@@ -253,7 +253,9 @@ export function loadNext(
 
   // temporarily reset this value to simplify loop logic
   runtimeState.eventNext = null;
+  runtimeState.publicEventNext = null;
 
+  // First loop: find the next event (private)
   for (let i = eventIndex + 1; i < timedEvents.length; i++) {
     const event = timedEvents[i];
     // we dont deal with events that are not playable
@@ -264,16 +266,34 @@ export function loadNext(
     // the private event is the one immediately after the current event
     if (runtimeState.eventNext === null) {
       runtimeState.eventNext = event;
+      break;
+    }
+  }
+
+  // Second loop: find the public event after publicEventNow
+  if (runtimeState.publicEventNow !== null) {
+    // Find the index of publicEventNow
+    let publicEventNowIndex = -1;
+    for (let i = 0; i < timedEvents.length; i++) {
+      if (isPlayableEvent(timedEvents[i]) && timedEvents[i].id === runtimeState.publicEventNow.id) {
+        publicEventNowIndex = i;
+        break;
+      }
     }
 
-    // if event is public
-    if (event.isPublic) {
-      runtimeState.publicEventNext = event;
-    }
+    // Look for the next public event after publicEventNow
+    if (publicEventNowIndex !== -1) {
+      for (let i = publicEventNowIndex + 1; i < timedEvents.length; i++) {
+        const event = timedEvents[i];
+        if (!isPlayableEvent(event)) {
+          continue;
+        }
 
-    // Stop if both are set
-    if (runtimeState.eventNext !== null && runtimeState.publicEventNext !== null) {
-      return;
+        if (event.isPublic) {
+          runtimeState.publicEventNext = event;
+          break;
+        }
+      }
     }
   }
 }
