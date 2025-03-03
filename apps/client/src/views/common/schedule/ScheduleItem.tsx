@@ -15,6 +15,7 @@ const formatOptions = {
 interface ScheduleItemProps {
   timeStart: number;
   timeEnd: number;
+  duration: number;
   title: string;
   backstageEvent: boolean;
   colour?: string;
@@ -23,7 +24,7 @@ interface ScheduleItemProps {
 }
 
 export default function ScheduleItem(props: ScheduleItemProps) {
-  const { timeStart, timeEnd, title, backstageEvent, colour, skip, delay } = props;
+  const { timeStart, timeEnd, duration, title, backstageEvent, colour, skip, delay } = props;
   const { showProjected } = useScheduleOptions();
 
   if (showProjected) {
@@ -32,6 +33,7 @@ export default function ScheduleItem(props: ScheduleItemProps) {
         timeStart={timeStart}
         timeEnd={timeEnd}
         title={title}
+        duration={duration}
         colour={colour}
         backstageEvent={backstageEvent}
         skip={skip}
@@ -46,6 +48,7 @@ export default function ScheduleItem(props: ScheduleItemProps) {
         timeStart={timeStart}
         timeEnd={timeEnd}
         title={title}
+        duration={duration}
         colour={colour}
         backstageEvent={backstageEvent}
         skip={skip}
@@ -56,14 +59,19 @@ export default function ScheduleItem(props: ScheduleItemProps) {
 
   const start = formatTime(timeStart, formatOptions);
   const end = formatTime(timeEnd, formatOptions);
+
   return (
     <li className={cx(['entry', skip && 'entry--skip'])}>
       <div className='entry-times'>
         <span className='entry-colour' style={{ backgroundColor: colour }} />
         <SuperscriptTime time={start} />
-        →
-        <SuperscriptTime time={end} />
-        {backstageEvent && '*'}
+        {duration !== 0 && (
+          <>
+            →
+            <SuperscriptTime time={end} />
+            {backstageEvent && '*'}
+          </>
+        )}
       </div>
       <div className='entry-title'>{title}</div>
     </li>
@@ -71,7 +79,7 @@ export default function ScheduleItem(props: ScheduleItemProps) {
 }
 
 function DelayedScheduleItem(props: ScheduleItemProps) {
-  const { timeStart, timeEnd, title, backstageEvent, colour, skip, delay } = props;
+  const { timeStart, timeEnd, duration, title, backstageEvent, colour, skip, delay } = props;
 
   const start = formatTime(timeStart, formatOptions);
   const end = formatTime(timeEnd, formatOptions);
@@ -84,15 +92,23 @@ function DelayedScheduleItem(props: ScheduleItemProps) {
         <span className='entry-times--delayed'>
           <span className='entry-colour' style={{ backgroundColor: colour }} />
           <SuperscriptTime time={start} />
-          →
-          <SuperscriptTime time={end} />
-          {backstageEvent && '*'}
+          {duration !== 0 && (
+            <>
+              →
+              <SuperscriptTime time={end} />
+              {backstageEvent && '*'}
+            </>
+          )}
         </span>
         <span className='entry-times--delay'>
           <SuperscriptTime time={delayedStart} />
-          →
-          <SuperscriptTime time={delayedEnd} />
-          {backstageEvent && '*'}
+          {duration !== 0 && (
+            <>
+              →
+              <SuperscriptTime time={delayedEnd} />
+              {backstageEvent && '*'}
+            </>
+          )}
         </span>
       </div>
       <div className='entry-title'>{title}</div>
@@ -101,16 +117,20 @@ function DelayedScheduleItem(props: ScheduleItemProps) {
 }
 
 function ProjectedScheduleItem(props: ScheduleItemProps) {
-  const { timeStart, timeEnd, title, backstageEvent, colour, skip, delay } = props;
+  const { timeStart, timeEnd, duration, title, backstageEvent, colour, skip, delay } = props;
 
   return (
     <li className={cx(['entry', skip && 'entry--skip'])}>
       <div className='entry-times'>
         <span className='entry-colour' style={{ backgroundColor: colour }} />
         <ProjectedTime time={timeStart} delay={delay} />
-        →
-        <ProjectedTime time={timeEnd} delay={delay} />
-        {backstageEvent && '*'}
+        {duration !== 0 && (
+          <>
+            →
+            <ProjectedTime time={timeEnd} delay={delay} />
+            {backstageEvent && '*'}
+          </>
+        )}
       </div>
       <div className='entry-title'>{title}</div>
     </li>

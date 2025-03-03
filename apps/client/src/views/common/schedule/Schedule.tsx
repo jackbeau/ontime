@@ -28,6 +28,7 @@ export default function Schedule({ isProduction, className }: ScheduleProps) {
             key={event.id}
             timeStart={timeStart}
             timeEnd={timeEnd}
+            duration={event.duration}
             title={event.title}
             colour={isBackstage ? event.colour : undefined}
             backstageEvent={!event.isPublic}
