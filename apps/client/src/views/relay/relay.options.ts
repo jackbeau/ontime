@@ -50,9 +50,23 @@ export const getRelayOptions = (timeFormat: string, customFields: CustomFields):
           defaultValue: false,
         },
         {
-          id: 'useMultipartProgressBar',
+          id: 'use-multipart-progress-bar',
           title: 'Use multi-part progress bar',
           description: 'Use the multi-part progress bar with warning and danger indicators',
+          type: 'boolean',
+          defaultValue: false,
+        },
+        {
+          id: 'hide-event-details',
+          title: 'Hide event details',
+          description: 'Hide details on current and next events',
+          type: 'boolean',
+          defaultValue: false,
+        },
+        {
+          id: 'disable-blink',
+          title: 'Disable blink',
+          description: 'Disble blinking events on event change',
           type: 'boolean',
           defaultValue: false,
         },
@@ -68,6 +82,8 @@ type RelayOptions = {
   hideNext: boolean;
   useMultipartProgressBar: boolean;
   iframeUrl: string | null;
+  hideEventDetails: boolean;
+  disableBlink: boolean;
 };
 
 /**
@@ -80,8 +96,10 @@ function getOptionsFromParams(searchParams: URLSearchParams): RelayOptions {
     secondarySource: searchParams.get('secondary-src') as keyof OntimeEvent | null,
     hidePrivate: isStringBoolean(searchParams.get('hide-private')),
     hideNext: isStringBoolean(searchParams.get('hide-next')),
-    useMultipartProgressBar: isStringBoolean(searchParams.get('useMultipartProgressBar')),
+    useMultipartProgressBar: isStringBoolean(searchParams.get('use-multipart-progress-bar')),
     iframeUrl: searchParams.get('iframe-url'),
+    hideEventDetails: isStringBoolean(searchParams.get('hide-event-details')),
+    disableBlink: isStringBoolean(searchParams.get('disable-blink')),
   };
 }
 

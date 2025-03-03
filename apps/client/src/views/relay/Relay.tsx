@@ -57,7 +57,8 @@ export default function Relay(props: RelayProps) {
   } = props;
 
   const { getLocalizedString } = useTranslation();
-  const { secondarySource, hidePrivate, hideNext, useMultipartProgressBar, iframeUrl } = useRelayOptions();
+  const { secondarySource, hidePrivate, hideNext, useMultipartProgressBar, iframeUrl, hideEventDetails, disableBlink } =
+    useRelayOptions();
   const [blinkClass, setBlinkClass] = useState(false);
   const { height: screenHeight } = useViewportSize();
 
@@ -157,9 +158,9 @@ export default function Relay(props: RelayProps) {
 
       <div className='card-container'>
         {showNow && (
-          <div className={cx(['event', 'now', blinkClass && 'blink'])}>
+          <div className={cx(['event', 'now', !disableBlink && blinkClass && 'blink'])}>
             <TitleCard label='now' title={nowMain} secondary={nowSecondary} />
-            {hideCurrentPrivateEvent ? (
+            {hideEventDetails ? (
               <div></div>
             ) : (
               <div className='timer-group'>
@@ -207,7 +208,7 @@ export default function Relay(props: RelayProps) {
         )}
 
         {!hideNext && showNext && hasEvents && (
-          <div className={cx(['event', 'now', blinkClass && 'blink'])}>
+          <div className={cx(['event', 'now', !disableBlink && blinkClass && 'blink'])}>
             <TitleCard label='next' title={nextMain} secondary={nextSecondary} />
           </div>
         )}
